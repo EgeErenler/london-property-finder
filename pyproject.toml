@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "propfinder"
+version = "0.1.0"
+description = "Street-level property search for London, built from open data."
+authors = [{ name = "Ege Erenler" }]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+  "duckdb>=1.1",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "pyarrow>=16",
+  "scipy>=1.12",
+  "pyproj>=3.6",
+  "requests>=2.31",
+  "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+propfinder = "propfinder.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
