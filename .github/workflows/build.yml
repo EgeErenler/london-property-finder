@@ -53,10 +53,10 @@ jobs:
           restore-keys: raw-${{ steps.month.outputs.month }}-
 
       - name: Fetch every source
-        run: propfinder fetch 2>&1 | tee -a build.log
+        run: propfinder fetch 2>&1 | tee -a /tmp/build.log
 
       - name: Build the site
-        run: propfinder build 2>&1 | tee -a build.log
+        run: propfinder build 2>&1 | tee -a /tmp/build.log
 
       - name: Save the street table to the data branch
         run: |
@@ -76,10 +76,12 @@ jobs:
       - name: Save the log
         if: always()
         run: |
-          cp build.log /tmp/build.log 2>/dev/null || echo "no log" > /tmp/build.log
-          cd /tmp && rm -rf logrepo && mkdir logrepo && cd logrepo
-          git init -q -b logs && cp /tmp/build.log .
-          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q --allow-empty -m "Log of run ${{ github.run_id }}" && git add build.log && git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q --amend -m "Log of run ${{ github.run_id }}"
+          test -f /tmp/build.log || echo "no log" > /tmp/build.log
+          rm -rf /tmp/logrepo && mkdir /tmp/logrepo && cd /tmp/logrepo
+          git init -q -b logs && cp /tmp/build.log . && git add build.log
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Log of run ${{ github.run_id }}"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" logs
 
       - uses: actions/upload-pages-artifact@v3
