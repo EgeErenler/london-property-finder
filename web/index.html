@@ -1,1 +1,163 @@
-<h1>placeholder</h1>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>London Property Finder | Find the right street before the right home</title>
+<meta name="description" content="Search every London street by budget, property type and what matters to you. Prices, rental yield, growth, crime, schools, stations and supermarkets from open data. By Ege Erenler.">
+<meta name="author" content="Ege Erenler">
+<link rel="canonical" href="https://egeerenler.com/london-property-finder/">
+<meta property="og:title" content="London Property Finder">
+<meta property="og:description" content="Find the right London street before the right home. Built from open data.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://egeerenler.com/london-property-finder/">
+<meta name="theme-color" content="#14213d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314213d'/%3E%3Cpath d='M16 6c-4.4 0-8 3.4-8 7.8C8 19.6 16 26 16 26s8-6.4 8-12.2C24 9.4 20.4 6 16 6z' fill='%2331c48d'/%3E%3Ccircle cx='16' cy='13.6' r='3' fill='%2314213d'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="./" aria-label="London Property Finder home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M16 6c-4.4 0-8 3.4-8 7.8C8 19.6 16 26 16 26s8-6.4 8-12.2C24 9.4 20.4 6 16 6z" fill="#31c48d"/><circle cx="16" cy="13.6" r="3" fill="currentColor"/></svg>
+    <span>London Property Finder</span>
+  </a>
+  <nav class="tabs" aria-label="Views">
+    <button class="tab is-active" data-view="search">Streets</button>
+    <button class="tab" data-view="areas">Boroughs</button>
+    <button class="tab" data-view="method">How it works</button>
+  </nav>
+  <span class="fresh" id="fresh">Loading data…</span>
+</header>
+
+<section class="searchbar" id="searchbar" aria-label="Search">
+  <div class="field budget">
+    <label for="minPrice">Budget</label>
+    <div class="budget-inputs">
+      <select id="minPrice" aria-label="Minimum price"></select>
+      <span>to</span>
+      <select id="maxPrice" aria-label="Maximum price"></select>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">Property type</span>
+    <div class="chips" id="types" role="group" aria-label="Property type">
+      <button class="chip is-on" data-type="F">Flat</button>
+      <button class="chip is-on" data-type="T">Terraced</button>
+      <button class="chip is-on" data-type="S">Semi</button>
+      <button class="chip is-on" data-type="D">Detached</button>
+    </div>
+  </div>
+  <div class="field">
+    <span class="label">I am looking as</span>
+    <div class="segmented" id="persona" role="radiogroup" aria-label="Buyer profile">
+      <button data-persona="balanced" class="is-on">Balanced</button>
+      <button data-persona="investor">Investor</button>
+      <button data-persona="family">Family</button>
+      <button data-persona="professional">Professional</button>
+    </div>
+  </div>
+  <button class="more" id="moreBtn" aria-expanded="false" aria-controls="morePanel">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M6 10h8M8.5 15h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    More filters <span class="badge" id="moreCount" hidden></span>
+  </button>
+</section>
+
+<section class="more-panel" id="morePanel" hidden aria-label="More filters">
+  <div class="more-grid">
+    <div class="field">
+      <label for="borough">Borough</label>
+      <select id="borough"><option value="">All of London</option></select>
+    </div>
+    <div class="field">
+      <label for="walk">Walk to a station</label>
+      <select id="walk">
+        <option value="">Any</option><option value="5">Up to 5 min</option>
+        <option value="10">Up to 10 min</option><option value="15">Up to 15 min</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="safety">Crime level</label>
+      <select id="safety">
+        <option value="">Any</option><option value="40">Below the London middle or better</option>
+        <option value="60">Lower than most streets</option><option value="80">Among the safest 20%</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="tenure">Tenure</label>
+      <select id="tenure">
+        <option value="">Any</option><option value="freehold">Mostly freehold</option>
+      </select>
+    </div>
+    <label class="check"><input type="checkbox" id="valueOnly"> Only value picks</label>
+    <label class="check"><input type="checkbox" id="busyOnly"> Only streets with 10+ sales</label>
+  </div>
+  <div class="weights">
+    <div class="weights-head">
+      <strong>What matters to you</strong>
+      <span>Your profile sets these. Move any slider to make it your own.</span>
+    </div>
+    <div class="weights-grid" id="weights"></div>
+  </div>
+</section>
+
+<main class="app" id="app">
+  <section class="view view-search is-active" data-view="search">
+    <div class="results">
+      <div class="results-head">
+        <div>
+          <h1 id="resultTitle">Finding streets…</h1>
+          <p id="resultSub" class="muted"></p>
+        </div>
+        <label class="sort">
+          <span class="sr-only">Sort by</span>
+          <select id="sort">
+            <option value="match">Best match</option>
+            <option value="value">Biggest discount</option>
+            <option value="yield">Highest rental yield</option>
+            <option value="growth">Fastest growth</option>
+            <option value="safety">Lowest crime</option>
+            <option value="price_asc">Lowest price</option>
+            <option value="price_desc">Highest price</option>
+          </select>
+        </label>
+      </div>
+      <div class="mobile-switch" role="tablist">
+        <button class="is-on" data-pane="list">List</button>
+        <button data-pane="map">Map</button>
+      </div>
+      <ol class="cards" id="cards" aria-live="polite"></ol>
+      <button class="load-more" id="loadMore" hidden>Show more streets</button>
+    </div>
+    <div class="map-wrap">
+      <div id="map" role="region" aria-label="Map of matching streets"></div>
+      <div class="legend" aria-hidden="true">
+        <span>Match</span><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><i class="l5"></i><span>Best</span>
+      </div>
+    </div>
+    <aside class="detail" id="detail" hidden aria-label="Street details">
+      <button class="close" id="closeDetail" aria-label="Close">×</button>
+      <div id="detailBody"></div>
+    </aside>
+  </section>
+
+  <section class="view view-areas" data-view="areas">
+    <div class="page">
+      <h1>London boroughs at a glance</h1>
+      <p class="lead">Typical prices, rents and growth for all 33 boroughs. Click a borough to see its streets.</p>
+      <div class="table-wrap"><table class="table" id="boroughTable"></table></div>
+    </div>
+  </section>
+
+  <section class="view view-method" data-view="method">
+    <article class="page prose" id="method"></article>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -46,7 +46,7 @@ def clean(csv_path: Path, clean_dir: Path) -> Path:
                        "AreaCode" AS la_code, "Index" AS idx_all, "DetachedIndex" AS idx_d,
                        "SemiDetachedIndex" AS idx_s, "TerracedIndex" AS idx_t, "FlatIndex" AS idx_f,
                        "AveragePrice" AS avg_price
-                FROM read_csv('{csv_path}', header = true, all_varchar = false)
+                FROM read_csv('{csv_path}', header = true, types = {{'Date': 'VARCHAR'}})
                 WHERE starts_with("AreaCode", '{LONDON_PREFIX}')
             )
             UNPIVOT src ON idx_all AS 'ALL', idx_d AS 'D', idx_s AS 'S', idx_t AS 'T', idx_f AS 'F'
