@@ -1,0 +1,84 @@
+name: Build
+
+# Runs every day. Each source updates on its own timetable (Land Registry and police data
+# monthly, schools daily, OpenStreetMap constantly), so a daily build keeps every part fresh.
+on:
+  schedule:
+    - cron: "41 5 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "web/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install .
+
+      # Past years of sales and the postcode file rarely change, so downloads are cached.
+      # The key changes every month, which refreshes everything at least monthly.
+      - name: Month
+        id: month
+        run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache downloads
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: raw-${{ steps.month.outputs.month }}-${{ github.run_id }}
+          restore-keys: raw-${{ steps.month.outputs.month }}-
+
+      - name: Fetch every source
+        run: propfinder fetch
+
+      - name: Build the site
+        run: propfinder build
+
+      - name: Save the street table to the data branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p /tmp/out && cp site/data/streets.json site/data/meta.json /tmp/out/
+          git switch --orphan data-new
+          git rm -rq --cached . || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git ! -name data ! -name site -exec rm -rf {} +
+          cp /tmp/out/* .
+          printf '# Data\n\nThe street table behind the site, rebuilt every day by the Build workflow.\n' > README.md
+          git add streets.json meta.json README.md
+          git commit -q -m "Data as of $(date -u +%Y-%m-%d)"
+          git push -q --force origin data-new:data
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
