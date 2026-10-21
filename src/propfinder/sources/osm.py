@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -39,9 +40,14 @@ def complete(data: dict) -> bool:
     return shops >= MIN_SUPERMARKETS and stations >= MIN_STATIONS
 
 
-def fetch(raw_dir: Path) -> Path:
+def fetch(raw_dir: Path, max_age_days: int = 7) -> Path:
     target = raw_dir / "osm" / "london.json"
     target.parent.mkdir(parents=True, exist_ok=True)
+    # Stations and supermarkets change slowly; a weekly refresh is enough and is kinder
+    # to the free Overpass servers.
+    if target.exists() and time.time() - target.stat().st_mtime < max_age_days * 86400:
+        log.info("osm: using the cached file from the last %d days", max_age_days)
+        return target
     errors = []
     for url in OVERPASS_URLS:
         try:
