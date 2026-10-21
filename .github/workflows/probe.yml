@@ -1,0 +1,62 @@
+name: Probe sources
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe
+        run: |
+          set -x
+          mkdir -p out && cd out
+          # Code-Point Open
+          curl -sSL -o cpo.zip "https://api.os.uk/downloads/v1/products/CodePointOpen/downloads?area=GB&format=CSV&redirect" || true
+          ls -la cpo.zip > cpo.txt 2>&1; unzip -l cpo.zip | head -30 >> cpo.txt 2>&1
+          unzip -p cpo.zip 'Doc/Code-Point_Open_Column_Headers.csv' >> cpo.txt 2>&1
+          unzip -l cpo.zip | grep -i '/sw.csv' >> cpo.txt 2>&1
+          unzip -p cpo.zip '*CSV/sw.csv' | head -5 >> cpo.txt 2>&1
+          # HPI
+          for m in 2026-09 2026-08 2026-07; do
+            code=$(curl -s -o hpi.csv -w "%{http_code}" "https://publicdata.landregistry.gov.uk/market-trend-data/house-price-index-data/UK-HPI-full-file-$m.csv")
+            echo "$m $code" >> hpi.txt; [ "$code" = 200 ] && break
+          done
+          ls -la hpi.csv >> hpi.txt; head -2 hpi.csv >> hpi.txt; grep -m3 "Kensington" hpi.csv >> hpi.txt; tail -2 hpi.csv >> hpi.txt
+          # GIAS
+          for d in $(for i in 0 1 2 3; do date -d "-$i day" +%Y%m%d; done); do
+            code=$(curl -s -o gias.csv -w "%{http_code}" "https://ea-edubase-api-prod.azurewebsites.net/edubase/downloads/public/edubasealldata$d.csv")
+            echo "$d $code" >> gias.txt; [ "$code" = 200 ] && break
+          done
+          ls -la gias.csv >> gias.txt; head -c 6000 gias.csv | head -2 | iconv -f cp1252 -t utf-8 >> gias.txt
+          # PIPR
+          curl -sSL -A "Mozilla/5.0" "https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics" -o pipr.html -w "%{http_code}\n" > pipr.txt
+          grep -o 'href="[^"]*\.xlsx"' pipr.html | head -5 >> pipr.txt
+          url=$(grep -o 'href="[^"]*\.xlsx"' pipr.html | head -1 | sed 's/href="//;s/"$//')
+          curl -sSL -A "Mozilla/5.0" -o pipr.xlsx "https://www.ons.gov.uk$url" -w "%{http_code}\n" >> pipr.txt
+          pip -q install openpyxl
+          python - >> pipr.txt <<'PY'
+          import openpyxl
+          wb = openpyxl.load_workbook("pipr.xlsx", read_only=True)
+          print(wb.sheetnames)
+          ws = wb["Table 1"]
+          n = 0
+          for row in ws.iter_rows(values_only=True):
+              if n < 4 or (row[1] and str(row[1]).startswith("E09") and n < 400 and "Kensington" in str(row[2])):
+                  print(row)
+              n += 1
+          print("rows", n)
+          PY
+          # Overpass
+          curl -s -m 120 -A "london-property-finder/0.1" --data-urlencode 'data=[out:json][timeout:90];area["ISO3166-2"="GB-LND"]->.a;(nwr["shop"="supermarket"](area.a););out center 3;' https://overpass-api.de/api/interpreter | head -c 3000 > osm.txt
+          # Police
+          curl -sSL -o crime.zip https://data.police.uk/data/archive/latest.zip
+          ls -la crime.zip > crime.txt; unzip -l crime.zip | grep -E 'metropolitan-street|city-of-london-street' | tail -14 >> crime.txt
+          f=$(unzip -l crime.zip | grep metropolitan-street | tail -1 | awk '{print $4}')
+          unzip -p crime.zip "$f" | head -4 >> crime.txt
+          rm -f *.zip *.csv *.xlsx *.html
+      - name: Push
+        run: |
+          cd out
+          git init -q -b probe && git config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -qm probe
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" probe
