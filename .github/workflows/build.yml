@@ -26,6 +26,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash -o pipefail -e {0}
     steps:
       - uses: actions/checkout@v4
 
@@ -50,10 +53,10 @@ jobs:
           restore-keys: raw-${{ steps.month.outputs.month }}-
 
       - name: Fetch every source
-        run: propfinder fetch
+        run: propfinder fetch 2>&1 | tee -a build.log
 
       - name: Build the site
-        run: propfinder build
+        run: propfinder build 2>&1 | tee -a build.log
 
       - name: Save the street table to the data branch
         run: |
@@ -68,6 +71,16 @@ jobs:
           git add streets.json meta.json README.md
           git commit -q -m "Data as of $(date -u +%Y-%m-%d)"
           git push -q --force origin data-new:data
+
+      # The log of the last run is kept on the `logs` branch, which makes failures easy to read.
+      - name: Save the log
+        if: always()
+        run: |
+          cp build.log /tmp/build.log 2>/dev/null || echo "no log" > /tmp/build.log
+          cd /tmp && rm -rf logrepo && mkdir logrepo && cd logrepo
+          git init -q -b logs && cp /tmp/build.log .
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q --allow-empty -m "Log of run ${{ github.run_id }}" && git add build.log && git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q --amend -m "Log of run ${{ github.run_id }}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" logs
 
       - uses: actions/upload-pages-artifact@v3
         with:
