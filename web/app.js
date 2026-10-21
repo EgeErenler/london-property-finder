@@ -433,13 +433,12 @@
         <li><b>Transport:</b> walking distance in a straight line to the nearest Tube, rail, Overground, DLR, Elizabeth line or tram station.</li>
         <li><b>Shops:</b> distance to the nearest supermarket.</li>
         <li><b>Schools:</b> number of state primary schools within 1 km, distance to the nearest one, and secondary schools within 1.5 km. School quality is not yet included.</li>
-        <li><b>Budget:</b> a street matches when the typical price of a type you chose is inside your budget.</li>
         <li><b>Value:</b> how the street's typical home compares with homes of the same type in the same borough. A low price can mean a bargain, or a smaller or older home.</li>
         <li><b>Growth:</b> the yearly price change of homes on the street that sold twice, at least a year apart.</li>
         <li><b>Yield:</b> 12 months of the borough's average rent for that type of home, divided by today's value. This is a gross figure before costs.</li>
       </ul>
       <h2>Your match score</h2>
-      <p>Your profile gives each score a weight from 0 to 3. The match score is the weighted average. You can change the weights under <b>More filters</b>.</p>
+      <p>A street matches your budget when the typical price of a type you chose is inside it. Your profile then gives each score a weight from 0 to 3. The match score is the weighted average. You can change the weights under <b>More filters</b>.</p>
       <h2>Limits</h2>
       <ul>
         <li>The data has no floor area or number of bedrooms, so prices are not per square foot.</li>
