@@ -223,13 +223,15 @@
   }
 
   // ---------- Rendering: map ----------
-  const colourFor = (v) => (v >= 75 ? "#0b6e4f" : v >= 65 ? "#2b9b6e" : v >= 55 ? "#6fbd9b" : v >= 45 ? "#b7dccb" : "#dfe9e3");
+  // Markers are coloured by rank within the current results, in five equal groups.
+  const SHADES = ["#0b6e4f", "#2b9b6e", "#6fbd9b", "#b7dccb", "#e3ece7"];
+  const MAP_LIMIT = 2000;
 
   function initMap() {
     map = L.map("map", { preferCanvas: true, zoomControl: true }).setView([51.505, -0.11], 11);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      maxZoom: 19, subdomains: "abcd",
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
     layer = L.layerGroup().addTo(map);
   }
@@ -237,12 +239,16 @@
   function renderMap(fit) {
     layer.clearLayers();
     markers.clear();
-    const subset = results.slice(0, 6000);
+    const subset = results.slice(0, MAP_LIMIT);
+    const fifth = Math.max(1, Math.ceil(subset.length / 5));
+    subset.forEach((st, i) => (st._shade = SHADES[Math.min(4, Math.floor(i / fifth))]));
+    $("mapNote").textContent = results.length > MAP_LIMIT
+      ? `Map shows the top ${MAP_LIMIT.toLocaleString("en-GB")} streets` : "";
     for (const st of subset.slice().reverse()) {
       const m = L.circleMarker([st.lat, st.lon], {
         radius: Math.min(9, 3.5 + Math.sqrt(st.homes) / 2.2),
         weight: 1, color: "#14213d", opacity: 0.35,
-        fillColor: colourFor(st._match), fillOpacity: 0.9,
+        fillColor: st._shade, fillOpacity: 0.92,
       });
       m.bindTooltip(`<b>${esc(st.street)}</b>, ${esc(st.outcode)}<br>Match ${st._match} · ${TYPE_PLURAL[st._bands[0].type]} ${money(st._bands[0].med)}`, { className: "street-tip", direction: "top" });
       m.on("click", () => openDetail(st.id, true));

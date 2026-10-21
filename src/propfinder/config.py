@@ -47,8 +47,8 @@ CRIME_MONTHS = 12
 
 # OpenStreetMap through the Overpass API. Mirrors are tried in order.
 OVERPASS_URLS = (
-    "https://overpass.private.coffee/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
     "https://overpass-api.de/api/interpreter",
 )
 

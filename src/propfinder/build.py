@@ -123,6 +123,9 @@ SELECT
     median(value_gap) AS value_gap,
     median(coalesce(gross_yield_type, gross_yield_all)) AS gross_yield
 FROM homes_scored
+-- A price far below the borough level is usually a part-share or discounted sale, not
+-- a market price, so it is left out of the street figures (but still listed as a sale).
+WHERE value_gap > -0.65
 GROUP BY street_key
 HAVING count(*) >= {min_homes};
 """

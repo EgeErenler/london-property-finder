@@ -157,8 +157,11 @@ select:focus, button:focus-visible, input:focus-visible { outline: 2px solid var
   padding: 6px 10px; display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted);
 }
 .legend i { width: 14px; height: 10px; border-radius: 3px; display: block; }
-.l1 { background: var(--s1); } .l2 { background: var(--s2); } .l3 { background: var(--s3); } .l4 { background: var(--s4); } .l5 { background: var(--s5); }
+.l1 { background: #e3ece7; } .l2 { background: #b7dccb; } .l3 { background: #6fbd9b; } .l4 { background: #2b9b6e; } .l5 { background: #0b6e4f; }
 .leaflet-container { font-family: var(--font); }
+.leaflet-tile-pane { filter: grayscale(1) contrast(.92) brightness(1.06); opacity: .75; }
+.legend em { font-style: normal; margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--line); }
+.legend em:empty { display: none; }
 .leaflet-tooltip.street-tip { font-family: var(--font); font-size: 13px; border-radius: 8px; border: 1px solid var(--line); box-shadow: var(--shadow); }
 
 /* Street detail */

@@ -54,6 +54,10 @@ def fetch(raw_dir: Path) -> Path:
             log.info("osm: %d elements from %s", len(data["elements"]), url)
             return target
         errors.append(f"{url}: incomplete answer ({len(data.get('elements', []))} elements)")
+    # OpenStreetMap changes slowly, so the last complete answer is a safe fallback.
+    if target.exists():
+        log.warning("osm: no complete answer (%s), using the cached file", "; ".join(errors))
+        return target
     raise RuntimeError("No complete answer from any Overpass mirror: " + "; ".join(errors))
 
 
