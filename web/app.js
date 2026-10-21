@@ -117,8 +117,9 @@
     for (const t of state.types) {
       const b = priceBand(st, t);
       if (!b) continue;
-      if (state.min && b.hi < state.min) continue;
-      if (state.max && b.lo > state.max) continue;
+      // A street matches when the typical (median) price of that type is in the budget.
+      if (state.min && b.med < state.min) continue;
+      if (state.max && b.med > state.max) continue;
       out.push(b);
     }
     return out.sort((a, b) => b.n - a.n);
@@ -432,6 +433,7 @@
         <li><b>Transport:</b> walking distance in a straight line to the nearest Tube, rail, Overground, DLR, Elizabeth line or tram station.</li>
         <li><b>Shops:</b> distance to the nearest supermarket.</li>
         <li><b>Schools:</b> number of state primary schools within 1 km, distance to the nearest one, and secondary schools within 1.5 km. School quality is not yet included.</li>
+        <li><b>Budget:</b> a street matches when the typical price of a type you chose is inside your budget.</li>
         <li><b>Value:</b> how the street's typical home compares with homes of the same type in the same borough. A low price can mean a bargain, or a smaller or older home.</li>
         <li><b>Growth:</b> the yearly price change of homes on the street that sold twice, at least a year apart.</li>
         <li><b>Yield:</b> 12 months of the borough's average rent for that type of home, divided by today's value. This is a gross figure before costs.</li>

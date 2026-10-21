@@ -16,8 +16,8 @@ Everything is built from official open data and rebuilt automatically every day.
 
 ## What you can do
 
-- **Search by budget and type.** A street matches when the middle half of its prices for a
-  chosen type overlaps your budget.
+- **Search by budget and type.** A street matches when the typical price of a chosen type
+  is inside your budget.
 - **Pick a profile.** Investor, Family, Professional or Balanced. Each one weighs seven scores
   differently, and you can move every weight yourself.
 - **Filter** by borough, walk to a station, crime level, freehold, value picks and busy streets.
