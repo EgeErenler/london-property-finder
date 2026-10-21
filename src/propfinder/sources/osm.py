@@ -14,16 +14,29 @@ from propfinder.geo import latlon_to_grid
 
 log = logging.getLogger(__name__)
 
+# A box around Greater London. Stations just outside the boundary still matter to
+# streets near the edge, so a box works better here than the borough boundary.
 QUERY = """
-[out:json][timeout:180];
-area["ISO3166-2"="GB-LND"]->.london;
+[out:json][timeout:180][bbox:51.27,-0.53,51.71,0.35];
 (
-  nwr["shop"="supermarket"](area.london);
-  nwr["railway"="station"](area.london);
-  nwr["public_transport"="station"]["railway"!="station"]["station"](area.london);
+  nwr["shop"="supermarket"];
+  nwr["railway"~"^(station|halt)$"];
 );
 out center tags;
 """
+
+# A complete answer has well over this many of each; fewer means the mirror cut it short.
+MIN_SUPERMARKETS = 300
+MIN_STATIONS = 300
+
+
+def complete(data: dict) -> bool:
+    if data.get("remark"):  # Overpass reports timeouts and errors here
+        return False
+    elements = data.get("elements", [])
+    shops = sum(1 for e in elements if e.get("tags", {}).get("shop") == "supermarket")
+    stations = len(elements) - shops
+    return shops >= MIN_SUPERMARKETS and stations >= MIN_STATIONS
 
 
 def fetch(raw_dir: Path) -> Path:
@@ -33,13 +46,15 @@ def fetch(raw_dir: Path) -> Path:
     for url in OVERPASS_URLS:
         try:
             data = http.post_json(url, {"data": QUERY})
-            if data.get("elements"):
-                target.write_text(json.dumps(data))
-                log.info("osm: %d elements from %s", len(data["elements"]), url)
-                return target
         except Exception as exc:  # noqa: BLE001 - try the next mirror
             errors.append(f"{url}: {exc}")
-    raise RuntimeError("All Overpass mirrors failed: " + "; ".join(errors))
+            continue
+        if complete(data):
+            target.write_text(json.dumps(data))
+            log.info("osm: %d elements from %s", len(data["elements"]), url)
+            return target
+        errors.append(f"{url}: incomplete answer ({len(data.get('elements', []))} elements)")
+    raise RuntimeError("No complete answer from any Overpass mirror: " + "; ".join(errors))
 
 
 def station_modes(tags: dict) -> str:
@@ -72,7 +87,7 @@ def parse(data: dict) -> pd.DataFrame:
             continue
         if tags.get("shop") == "supermarket":
             kind, detail = "supermarket", tags.get("brand") or name
-        elif tags.get("railway") == "station" or tags.get("public_transport") == "station":
+        elif tags.get("railway") in ("station", "halt"):
             if tags.get("station") in ("miniature", "funicular") or tags.get("disused"):
                 continue
             kind, detail = "station", station_modes(tags)

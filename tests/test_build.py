@@ -191,4 +191,4 @@ def test_sample_builds_the_site(tmp_path):
     meta = json.loads((site / "data" / "meta.json").read_text())
     assert meta["streets"] == len(streets["rows"])
     assert (site / "index.html").exists()
-    assert any((site / "data" / "homes").glob("*.json"))
+    assert any((site / "data" / "areas").glob("*.json"))

@@ -31,7 +31,7 @@
     valueOnly: false, busyOnly: false, sort: "match", shown: PAGE, selected: null,
   };
   let streets = [], meta = null, boroughs = new Map(), results = [], map, layer, markers = new Map();
-  const homesCache = new Map();
+  const areaCache = new Map();
   const $ = (id) => document.getElementById(id);
 
   // ---------- Formatting ----------
@@ -54,24 +54,52 @@
   // ---------- Data ----------
   const toObjects = (t) => t.rows.map((r) => Object.fromEntries(t.columns.map((c, i) => [c, r[i]])));
 
+  // The street list is stored compactly (see export.py). This turns a row back into
+  // plain fields: prices in pounds, shares and rates as fractions.
+  function decode(r, boroughList, stations) {
+    const k = (v) => (v == null ? null : v * 1000);
+    const st = {
+      id: r.id, street: r.street, outcode: r.outcode,
+      la_code: boroughList[r.b]?.la_code, borough: boroughList[r.b]?.borough || "",
+      lat: r.y / 1e5, lon: r.x / 1e5, homes: r.homes, sales: r.sales,
+      leasehold_share: r.lease == null ? null : r.lease / 100,
+      value_gap: r.gap == null ? null : r.gap / 1000,
+      gross_yield: r.yld == null ? null : r.yld / 1e4,
+      growth: r.gro == null ? null : r.gro / 1e4,
+      growth_pairs: r.gp,
+      station_name: stations[r.st]?.[0] || "", station_detail: stations[r.st]?.[1] || "",
+      station_dist: r.sd,
+    };
+    for (const t of ["f", "t", "s", "d"]) {
+      st[`n_${t}`] = r[`n_${t}`];
+      for (const q of ["p25", "med", "p75"]) st[`${q}_${t}`] = k(r[`${q}_${t}`]);
+    }
+    for (const f of FACTORS) st[`score_${f.key}`] = r[`s_${f.key}`];
+    return st;
+  }
+
   async function load() {
     const [m, s] = await Promise.all([
       fetch("data/meta.json").then((r) => r.json()),
       fetch("data/streets.json").then((r) => r.json()),
     ]);
     meta = m;
-    streets = toObjects(s);
-    for (const b of toObjects(meta.boroughs)) boroughs.set(b.la_code, b);
-    for (const st of streets) st.borough = boroughs.get(st.la_code)?.borough || "";
+    const boroughList = toObjects(meta.boroughs);
+    for (const b of boroughList) boroughs.set(b.la_code, b);
+    streets = toObjects(s).map((r) => decode(r, boroughList, meta.stations));
   }
 
-  async function homesFor(outcode) {
-    if (!homesCache.has(outcode)) {
-      homesCache.set(outcode, fetch(`data/homes/${encodeURIComponent(outcode)}.json`)
-        .then((r) => (r.ok ? r.json() : { columns: [], rows: [] }))
-        .then(toObjects));
+  // Street details and recent sales live in one file per postcode district.
+  async function areaFor(outcode) {
+    if (!areaCache.has(outcode)) {
+      areaCache.set(outcode, fetch(`data/areas/${encodeURIComponent(outcode)}.json`)
+        .then((r) => (r.ok ? r.json() : { streets: { columns: [], rows: [] }, homes: { columns: [], rows: [] } }))
+        .then((a) => ({
+          details: new Map(toObjects(a.streets).map((d) => [d.id, d])),
+          homes: toObjects(a.homes),
+        })));
     }
-    return homesCache.get(outcode);
+    return areaCache.get(outcode);
   }
 
   // ---------- Matching ----------
@@ -264,6 +292,14 @@
       if (fromMap) cardEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
     if (map) map.panTo([st.lat, st.lon]);
+    $("detail").hidden = false;
+    if (!st._detail) {
+      $("detailBody").innerHTML = `<h2>${esc(st.street)}</h2><p class="where">${esc(st.outcode)} · ${esc(st.borough)}</p><p class="muted">Loading…</p>`;
+      const area = await areaFor(st.outcode);
+      Object.assign(st, area.details.get(st.id) || {});
+      st._detail = true;
+      if (state.selected !== id) return;
+    }
     const b = boroughs.get(st.la_code) || {};
     const match = st._match ?? matchScore(st);
     const gap = st.value_gap;
@@ -319,7 +355,7 @@
     $("detail").scrollTop = 0;
     writeHash();
 
-    const homes = (await homesFor(st.outcode)).filter((h) => h.street_id === st.id);
+    const homes = (await areaFor(st.outcode)).homes.filter((h) => h.street_id === st.id);
     if (state.selected !== id) return;
     const rows = homes.slice(0, 25).map((h) => {
       const addr = [h.saon, h.paon].filter(Boolean).join(", ");
