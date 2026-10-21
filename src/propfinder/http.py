@@ -39,9 +39,10 @@ def download(url: str, target: Path, timeout: int = 300, attempts: int = 3) -> P
 
 
 def exists(url: str) -> bool:
+    """True if the URL answers 200. Uses GET, because some servers do not answer HEAD."""
     try:
-        response = session.head(url, timeout=60, allow_redirects=True)
-        return response.status_code == 200
+        with session.get(url, timeout=60, stream=True) as response:
+            return response.status_code == 200
     except requests.RequestException:
         return False
 
