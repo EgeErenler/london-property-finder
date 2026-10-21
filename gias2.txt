@@ -1,0 +1,15 @@
+2:"LA (code)"
+18:"PhaseOfEducation (code)"
+19:"PhaseOfEducation (name)"
+40:"NumberOfPupils"
+62:"Postcode"
+69:"BSOInspectorateName (name)"
+70:"InspectorateReport"
+71:"DateOfLastInspectionVisit"
+72:"NextInspectionVisit"
+111:"Easting"
+112:"Northing"
+115:"InspectorateName (name)"
+120:"PreviousLA (code)"
+8396
+[((None, 'Primary'), 5180), ((None, 'Not applicable'), 1669), ((None, 'Secondary'), 1165), ((None, 'Nursery'), 174), ((None, '16 plus'), 122), ((None, 'All-through'), 76), ((None, 'Middle deemed secondary'), 10)]

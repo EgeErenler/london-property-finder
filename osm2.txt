@@ -1,0 +1,112 @@
+== https://overpass-api.de
+<html>
+<head><title>406 Not Acceptable</title></head>
+<body>
+<center><h1>406 Not Acceptable</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+== https://overpass.kumi.systems
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-05-31T22:37:44Z",
+    "timestamp_areas_base": "2026-05-31T22:37:44Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 692162503,
+  "lat": 51.5125242,
+  "lon": -0.0848775,
+  "tags": {
+    "brand": "Amazon Fresh",
+    "brand:wikidata": "Q4740834",
+    "check_date": "2025-06-06",
+    "name": "Amazon Fresh",
+    "opening_hours": "Mo-Su 07:00-23:00",
+    "payment:cash": "no",
+    "shop": "supermarket",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 2006375680,
+  "lat": 51.5179134,
+  "lon": -0.0844427,
+  "tags": {
+    "addr:city": "London",
+    "addr:housenumber": "35",
+    "addr:postcode": "EC2M 7BD",
+    "addr:street": "Blomfield Street",
+    "addr:unit": "4b-5",
+    "brand": "Whole Foods Market",
+    "brand:wikidata": "Q1809448",
+    "check_date": "2026-04-28",
+    "name": "Whole Foods Market",
+    "shop": "supermarket",
+    "was:brand": "Amazon Fresh",
+    "was:brand:wikidata": "Q4740834",
+    "was:fhrs:id": "1658923",
+    "was:name": "Amazon Fresh"
+  }
+}
+
+  ]
+}
+== https://overpass.private.coffee
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-07-28T02:16:18Z",
+    "timestamp_areas_base": "2026-07-28T02:16:18Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 692162503,
+  "lat": 51.5125242,
+  "lon": -0.0848775,
+  "tags": {
+    "brand": "Amazon Fresh",
+    "brand:wikidata": "Q4740834",
+    "check_date": "2025-06-06",
+    "name": "Amazon Fresh",
+    "opening_hours": "Mo-Su 07:00-23:00",
+    "payment:cash": "no",
+    "shop": "supermarket",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 2006375680,
+  "lat": 51.5179134,
+  "lon": -0.0844427,
+  "tags": {
+    "addr:city": "London",
+    "addr:housenumber": "35",
+    "addr:postcode": "EC2M 7BD",
+    "addr:street": "Blomfield Street",
+    "addr:unit": "4b-5",
+    "brand": "Whole Foods Market",
+    "brand:wikidata": "Q1809448",
+    "check_date": "2026-04-28",
+    "name": "Whole Foods Market",
+    "shop": "supermarket",
+    "was:brand": "Amazon Fresh",
+    "was:brand:wikidata": "Q4740834",
+    "was:fhrs:id": "1658923",
+    "was:name": "Amazon Fresh"
+  }
+}
+
+  ]
+}
