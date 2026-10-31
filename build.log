@@ -1,0 +1,24 @@
+2026-10-31 11:14:28,070 INFO fetching prices
+2026-10-31 11:14:28,777 INFO downloaded pp-2025.csv (172.8 MB)
+2026-10-31 11:14:28,918 INFO downloaded pp-2026.csv (79.6 MB)
+2026-10-31 11:14:32,802 INFO sales: 751,717 London sales
+2026-10-31 11:14:32,897 INFO fetching postcodes
+2026-10-31 11:14:33,529 INFO postcodes: 180,837 London postcodes
+2026-10-31 11:14:33,530 INFO fetching hpi
+2026-10-31 11:14:34,271 INFO downloaded uk-hpi.csv (35.1 MB)
+2026-10-31 11:14:34,518 INFO hpi: 61,671 rows up to 2026-08-01
+2026-10-31 11:14:34,518 INFO fetching rents
+2026-10-31 11:14:34,998 INFO downloaded pipr.xlsx (18.8 MB)
+2026-10-31 11:14:44,501 INFO rents: 32 boroughs for 2026-09-01
+2026-10-31 11:14:44,501 INFO fetching crime
+2026-10-31 11:14:46,017 INFO crime: archive unchanged since Wed, 30 Sep 2026 14:06:14 GMT
+2026-10-31 11:14:47,309 INFO crime: 1,129,578 records, 2025-09 to 2026-08
+2026-10-31 11:14:47,310 INFO fetching schools
+2026-10-31 11:14:51,319 INFO downloaded gias.csv (64.7 MB)
+2026-10-31 11:14:51,865 INFO schools: 2250 primary and secondary schools
+2026-10-31 11:14:51,865 INFO fetching osm
+2026-10-31 11:14:51,865 INFO osm: using the cached file from the last 7 days
+2026-10-31 11:14:51,893 INFO osm: {'supermarket': 1409, 'station': 693}
+2026-10-31 11:14:54,359 INFO build: 751,575 sales, 680,112 homes, 38,416 streets
+2026-10-31 11:14:58,156 INFO export: streets.json 6.3 MB for 38416 streets
+2026-10-31 11:15:17,899 INFO export: detail files for 275 postcode districts
